@@ -3,15 +3,24 @@
 Full port scans and port enumeration for the masses!
 @T0w3ntum
 '''
-import sys, re, os, subprocess
+import sys, re, os, subprocess, shlex
 import xml.etree.ElementTree as ET
 from optparse import OptionParser
 from libnmap.parser import NmapParser, NmapParserException
 from libnmap.process import NmapProcess
 
 # Further enumeration
-def do_intense(port_list):
-    print "[+] Performing further port enumeration"
+def do_intense(IP,port_list):
+    if '445' or '135' or '139' in port_list:
+        print "[+] Running enum4linux"
+	cmd = "enum4linux %s" % (IP)
+	args = shlex.split(cmd)
+	out_file = "/tmp/%s-enum4linux.txt" % (IP)
+        with open(out_file, 'w') as f:
+            subprocess.call(args, stdout=f)
+	print "[+] Enum4linux complete. You can view it here: %s" % (out_file)
+    else:
+        print "[-] Doesn't look like we can run enum4linux on this host."
     
 
 # start a new nmap scan with some specific options
@@ -105,11 +114,13 @@ if __name__ == "__main__":
 
     # If -sV then do intense scan
     if options.verbose == True:
-        print "[+] Identified open ports. Now performing intense scan"
+	print "[+] Running service identification scans."
         port_list = get_ports(report)
         ports = ",".join(map(str,port_list))
         scan_op = "-sT -A -p %s" % (ports)
         report = do_scan(IP, scan_op)
+    else:
+        port_list = get_ports(report)
     # Print out the results
     if report:
 	print_scan(report)
@@ -118,7 +129,7 @@ if __name__ == "__main__":
 
 # Some future stuff here. 
     if options.intense == True:
-        do_intense(port_list)
+        do_intense(IP,port_list)
 
 
 
