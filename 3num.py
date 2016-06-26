@@ -11,7 +11,7 @@ from libnmap.process import NmapProcess
 
 
 
-# start a new nmap scan on with some specific options
+# start a new nmap scan with some specific options
 def do_scan(targets, options):
     parsed = None
     nmproc = NmapProcess(targets, options)
@@ -23,7 +23,7 @@ def do_scan(targets, options):
     except NmapParserException as e:
         print("Exception raised while parsing scan: {0}".format(e.msg))
 
-    return parsed
+    return parsed;
 
 
 # print scan results from a nmap report
@@ -51,15 +51,15 @@ def print_scan(nmap_report):
             print(pserv)
     print(nmap_report.summary)
 
+# Get all the ports into a list
 def get_ports(nmap_report):
     port_list = []
     for host in nmap_report.hosts:
         for serv in host.services:
             port_list.append(serv.port)
-    ports = ",".join(map(str,port_list))
-    print "[+] These are the open ports: %s" % (ports)
-    return ports;
+    return port_list;
 
+# Main
 if __name__ == "__main__":
     # Set up arguments
     usage = '%prog -H HOST_IP'
@@ -74,16 +74,17 @@ if __name__ == "__main__":
         exit(-1)
 
     options = "-T4 --open --min-rate=400 -p-"
-    print "[+] Perorming quick full port scan on %s" % (IP)
+    print "[+] Performing quick full port scan on %s\n" % (IP)
     report = do_scan(IP, options)
     if report:
-	print_scan(report)
+	print "[+] Parsing the results from quick scan"
     else:
 	print("No results returned")
 
     # Send report into get_ports
     print "[+] Identified open ports. Now performing intense scan"
-    ports = get_ports(report)
+    port_list = get_ports(report)
+    ports = ",".join(map(str,port_list))
     options = "-sT -A -p %s" % (ports)
     report = do_scan(IP, options)
 
@@ -91,9 +92,10 @@ if __name__ == "__main__":
 	print_scan(report)
     else:
 	print("No results returned")
-    
+'''
+# Some future stuff here. 
     if options.intense is not None:
         do_intense(ports)
-
+'''
 
 
