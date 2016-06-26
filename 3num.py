@@ -9,7 +9,10 @@ from optparse import OptionParser
 from libnmap.parser import NmapParser, NmapParserException
 from libnmap.process import NmapProcess
 
-
+# Further enumeration
+def do_intense(port_list):
+    print "[+] Performing further port enumeration"
+    
 
 # start a new nmap scan with some specific options
 def do_scan(targets, options):
@@ -61,11 +64,30 @@ def get_ports(nmap_report):
 
 # Main
 if __name__ == "__main__":
+
+    
+    intro = """\
+     .----------------.  .-----------------. .----------------.  .----------------. 
+    | .--------------. || .--------------. || .--------------. || .--------------. |
+    | |    ______    | || | ____  _____  | || | _____  _____ | || | ____    ____ | |
+    | |   / ____ `.  | || ||_   \|_   _| | || ||_   _||_   _|| || ||_   \  /   _|| |
+    | |   `'  __) |  | || |  |   \ | |   | || |  | |    | |  | || |  |   \/   |  | |
+    | |   _  |__ '.  | || |  | |\ \| |   | || |  | '    ' |  | || |  | |\  /| |  | |
+    | |  | \____) |  | || | _| |_\   |_  | || |   \ `--' /   | || | _| |_\/_| |_ | |
+    | |   \______.'  | || ||_____|\____| | || |    `.__.'    | || ||_____||_____|| |
+    | |              | || |              | || |              | || |              | |
+    | '--------------' || '--------------' || '--------------' || '--------------' |
+     '----------------'  '----------------'  '----------------'  '----------------' 
+					@T0w3ntum
+     """
+    print intro
+
     # Set up arguments
     usage = '%prog -H HOST_IP'
     parser = OptionParser(usage=usage)
-    parser.add_option('-H', '--host', type='string', action='store', dest='target_host', help='Target Host IP')
+    parser.add_option('-H', '--host', type='string', action='store', dest='target_host', help='Target Host IP.')
     parser.add_option('-i', '--intense', action='store_true', dest='intense', help='Perform further enumeration tasks on found services')
+    parser.add_option('-V', '--verbose', action='store_true', dest='verbose', help='Perform service identification')
     (options, args) = parser.parse_args()
     IP = options.target_host
     if options.target_host is None:
@@ -73,29 +95,30 @@ if __name__ == "__main__":
         parser.print_help()
         exit(-1)
 
-    options = "-T4 --open --min-rate=400 -p-"
-    print "[+] Performing quick full port scan on %s\n" % (IP)
-    report = do_scan(IP, options)
+    scan_op = "-T4 --open --min-rate=400 -p-"
+    print "[+] Performing quick full port scan on %s" % (IP)
+    report = do_scan(IP, scan_op)
     if report:
 	print "[+] Parsing the results from quick scan"
     else:
 	print("No results returned")
 
-    # Send report into get_ports
-    print "[+] Identified open ports. Now performing intense scan"
-    port_list = get_ports(report)
-    ports = ",".join(map(str,port_list))
-    options = "-sT -A -p %s" % (ports)
-    report = do_scan(IP, options)
-
+    # If -sV then do intense scan
+    if options.verbose == True:
+        print "[+] Identified open ports. Now performing intense scan"
+        port_list = get_ports(report)
+        ports = ",".join(map(str,port_list))
+        scan_op = "-sT -A -p %s" % (ports)
+        report = do_scan(IP, scan_op)
+    # Print out the results
     if report:
 	print_scan(report)
     else:
 	print("No results returned")
-'''
+
 # Some future stuff here. 
-    if options.intense is not None:
-        do_intense(ports)
-'''
+    if options.intense == True:
+        do_intense(port_list)
+
 
 
