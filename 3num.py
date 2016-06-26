@@ -11,7 +11,7 @@ from libnmap.process import NmapProcess
 
 
 
-# start a new nmap scan on localhost with some specific options
+# start a new nmap scan on with some specific options
 def do_scan(targets, options):
     parsed = None
     nmproc = NmapProcess(targets, options)
